@@ -10,26 +10,55 @@
     </style>
 </head>
 <body>
-    <div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        const map = L.map('map').setView([53.5, -2.3], 9);
+<input id="searchBox" type="text" placeholder="Search SATS number…" 
+       style="position:absolute; top:10px; left:10px; z-index:1000; padding:6px; width:200px;">
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19
-        }).addTo(map);
+<div id="map"></div>
 
-        fetch('mapdata.geojson')
-            .then(r => r.json())
-            .then(data => {
-                L.geoJSON(data, {
-                    onEachFeature: (feature, layer) => {
-                        const img = feature.properties.image;
-                        layer.bindPopup(`<img class="popup-img" src="${img}">`);
-                    }
-                }).addTo(map);
-            });
-    </script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    const map = L.map('map').setView([53.5, -2.3], 9);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+    }).addTo(map);
+
+    let allMarkers = [];
+
+    fetch('mapdata.geojson')
+        .then(r => r.json())
+        .then(data => {
+            L.geoJSON(data, {
+                onEachFeature: (feature, layer) => {
+                    const img = feature.properties.image;
+                    const sats = feature.properties.satsnumber;
+
+                    layer.bindPopup(`
+                        <b>SATS: ${sats}</b><br>
+                        <img class="popup-img" src="${img}">
+                    `);
+
+                    layer.satsnumber = sats;
+                    allMarkers.push(layer);
+                }
+            }).addTo(map);
+        });
+
+    document.getElementById("searchBox").addEventListener("input", function () {
+        const query = this.value.trim().toLowerCase();
+
+        allMarkers.forEach(marker => {
+            const match = marker.satsnumber.toLowerCase().includes(query);
+
+            if (match) {
+                if (!map.hasLayer(marker)) map.addLayer(marker);
+            } else {
+                if (map.hasLayer(marker)) map.removeLayer(marker);
+            }
+        });
+    });
+</script>
+
 </body>
 </html>
