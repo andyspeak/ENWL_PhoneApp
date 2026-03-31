@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+/<!DOCTYPE html>
 <html>
 <head>
     <title>ENWL Map</title>
@@ -26,7 +26,7 @@
 
     let allMarkers = [];
 
-    fetch('mapdata.geojson')
+    fetch('images/mapdata.geojson')
         .then(r => r.json())
         .then(data => {
             L.geoJSON(data, {
